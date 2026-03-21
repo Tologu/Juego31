@@ -16,6 +16,24 @@
   background: linear-gradient(90deg, #eaffd0 0%, #d0ffe7 100%);
   color: #1a4d2e;
 }
+
+/* Bot winner label — always pinned to bottom-right of player-card */
+.bot-gana-label {
+  position: absolute !important;
+  right: 10px !important;
+  bottom: 10px !important;
+  left: auto !important;
+  top: auto !important;
+  z-index: 10;
+}
+
+.deck-discard-row {
+  display: flex;
+  flex-direction: row;
+  gap: 20px;
+  justify-content: center;
+  align-items: flex-start;
+}
 .player-result-label.pierde {
   background: linear-gradient(90deg, #ffd0d0 0%, #ffe0e0 100%);
   color: #b8001a;
@@ -434,6 +452,7 @@
   background-repeat: no-repeat;
   background-color: #f9f0d7;
   box-shadow: inset 0 0 0 1px rgba(34, 24, 12, 0.08);
+  clip-path: inset(2px round 9px);
 }
 
 .card strong,
@@ -460,6 +479,7 @@
   background-color: #f9f0d7;
   box-shadow: inset 0 0 0 1px rgba(34, 24, 12, 0.08);
   filter: contrast(1.22) saturate(1.14) brightness(0.98);
+  clip-path: inset(2px round 9px);
 }
 
 
@@ -475,10 +495,11 @@
 }
 
 .stage-center {
-  display: grid;
-  grid-template-columns: 150px minmax(180px, 1fr) 1fr;
-  gap: 9px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
   align-items: center;
+  justify-content: center;
 }
 
 .pile-box,
@@ -493,6 +514,22 @@
 .pile-box h3,
 .log-panel h3 {
   margin: 0 0 10px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.deck-count-badge {
+  display: inline-block;
+  background: rgba(246, 215, 122, 0.22);
+  color: #f6d77a;
+  border: 1px solid rgba(246, 215, 122, 0.4);
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 1px 9px;
+  letter-spacing: 0.02em;
+  vertical-align: middle;
 }
 
 .deck-stack {
@@ -510,7 +547,6 @@
 
 .deck-stack span {
   position: absolute;
-  inset: auto;
   top: 0;
   left: 0;
   width: 100%;
@@ -520,23 +556,7 @@
   background-repeat: no-repeat;
   background-color: #f9f0d7;
   box-shadow: inset 0 0 0 1px rgba(34, 24, 12, 0.08);
-}
-
-.deck-stack span:nth-child(1) {
-  transform: translate(-8px, 6px);
-  z-index: 1;
-  opacity: 0.92;
-}
-
-.deck-stack span:nth-child(2) {
-  transform: translate(-4px, 3px);
-  z-index: 2;
-  opacity: 0.96;
-}
-
-.deck-stack span:nth-child(3) {
-  transform: translate(0, 0);
-  z-index: 3;
+  clip-path: inset(2px round 7px);
 }
 
 .top-card {
@@ -615,11 +635,13 @@
   flex-wrap: wrap;
   align-content: start;
   gap: 8px;
+  max-width: 280px;
 }
 
 .controls button {
   min-width: 118px;
   font-size: 0.86rem;
+  flex: 1 1 calc(50% - 4px);
 }
 
 .controls button:disabled,
@@ -825,7 +847,8 @@
   }
 
   .stage-center {
-    grid-template-columns: 1fr;
+    flex-direction: column;
+    align-items: center;
   }
 
   .discard-focus {

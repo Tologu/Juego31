@@ -46,6 +46,7 @@ const SPRITE_ROWS = 5
 const BACK_SPRITE_COLUMN = 1
 const BACK_SPRITE_ROW = 4
 
+
 const spriteRowBySuit: Record<Suit, number> = {
   oros: 0,
   copas: 1,
@@ -759,9 +760,9 @@ function App() {
                 </p>
                 {showWinners && (
                   isWinner(player.id)
-                    ? <span className="player-result-label gana">GANA</span>
+                    ? <span className="player-result-label gana bot-gana-label">GANA</span>
                     : losersThisRound.includes(player.id)
-                      ? <span className="player-result-label pierde">PIERDE</span>
+                      ? <span className="player-result-label pierde bot-gana-label">PIERDE</span>
                       : null
                 )}
               </article>
@@ -770,41 +771,41 @@ function App() {
         </section>
 
         <section className="center-zone stage-center">
-          <div className="pile-box">
-            <h3>Mazo</h3>
-            <button
-              type="button"
-              className={`deck-stack action-pile ${canHumanAct && game.phase === 'turn' ? 'drag-enabled' : ''} ${dragSource === 'deck' ? 'dragging' : ''}`}
-              onClick={() => drawForHuman('deck')}
-              onDragStart={(event) => startDrawDrag('deck', event)}
-              onDragEnd={endDrawDrag}
-              draggable={canHumanAct && game.phase === 'turn'}
-              disabled={!canHumanAct || game.phase !== 'turn'}
-              aria-label="Robar del mazo arrastrando a tu mano"
-            >
-              <span style={cardBackSpriteStyle()}></span>
-              <span style={cardBackSpriteStyle()}></span>
-              <span style={cardBackSpriteStyle()}></span>
-            </button>
-          </div>
 
-          <div className="pile-box discard-focus">
-            <h3>Descarte</h3>
-            <button
-              type="button"
-              className={`top-card sprite-card aged-card action-pile ${canHumanAct && game.phase === 'turn' ? 'drag-enabled' : ''} ${dragSource === 'discard' ? 'dragging' : ''} ${canHumanDiscard ? 'discard-drop-ready' : ''}`}
-              style={cardSpriteStyle(topDiscard)}
-              onClick={() => drawForHuman('discard')}
-              onDragStart={(event) => startDrawDrag('discard', event)}
-              onDragEnd={endDrawDrag}
-              onDragOver={allowDropToDiscard}
-              onDrop={dropToDiscard}
-              draggable={canHumanAct && game.phase === 'turn'}
-              disabled={!canHumanAct || game.phase !== 'turn'}
-              aria-label="Robar del descarte arrastrando a tu mano"
-            >
-              <span className="sr-only">{rankLabel(topDiscard.rank)} de {topDiscard.suit}</span>
-            </button>
+          <div className="deck-discard-row">
+            <div className="pile-box">
+              <h3>Mazo <span className="deck-count-badge">{game.deck.length}</span></h3>
+              <button
+                type="button"
+                className={`deck-stack action-pile ${canHumanAct && game.phase === 'turn' ? 'drag-enabled' : ''} ${dragSource === 'deck' ? 'dragging' : ''}`}
+                onClick={() => drawForHuman('deck')}
+                onDragStart={(event) => startDrawDrag('deck', event)}
+                onDragEnd={endDrawDrag}
+                draggable={canHumanAct && game.phase === 'turn'}
+                disabled={!canHumanAct || game.phase !== 'turn'}
+                aria-label="Robar del mazo arrastrando a tu mano"
+              >
+                <span style={cardBackSpriteStyle()}></span>
+              </button>
+            </div>
+            <div className="pile-box discard-focus">
+              <h3>Descarte</h3>
+              <button
+                type="button"
+                className={`top-card sprite-card aged-card action-pile ${canHumanAct && game.phase === 'turn' ? 'drag-enabled' : ''} ${dragSource === 'discard' ? 'dragging' : ''} ${canHumanDiscard ? 'discard-drop-ready' : ''}`}
+                style={cardSpriteStyle(topDiscard)}
+                onClick={() => drawForHuman('discard')}
+                onDragStart={(event) => startDrawDrag('discard', event)}
+                onDragEnd={endDrawDrag}
+                onDragOver={allowDropToDiscard}
+                onDrop={dropToDiscard}
+                draggable={canHumanAct && game.phase === 'turn'}
+                disabled={!canHumanAct || game.phase !== 'turn'}
+                aria-label="Robar del descarte arrastrando a tu mano"
+              >
+                <span className="sr-only">{rankLabel(topDiscard.rank)} de {topDiscard.suit}</span>
+              </button>
+            </div>
           </div>
 
           <div className="controls">
@@ -831,109 +832,102 @@ function App() {
               Cartas que han salido
             </button>
           </div>
-              {showDiscardModal && (
-                <div className="discard-modal" onClick={() => setShowDiscardModal(false)}>
-                  <div className="discard-modal-content" onClick={e => e.stopPropagation()}>
-                    <button className="close-modal-btn" onClick={() => setShowDiscardModal(false)} aria-label="Cerrar">×</button>
-                    <div className="minicards-grid-wrap">
-                      <div className="minicards-grid">
-                        {SUITS.map((suit) => (
-                          <div key={suit} className="minicards-row">
-                            {RANKS.map((rank) => {
-                              // Solo mostrar los rangos válidos (1-7, 10=Sota, 11=Caballo, 12=Rey)
-                              if (![1,2,3,4,5,6,7,10,11,12].includes(rank)) return null;
-                              const cardId = `${suit}-${rank}`;
-                              const isOut = game.discardPile.some(c => c.suit === suit && c.rank === rank);
-                              const row = spriteRowBySuit[suit];
-                              const col = spriteColumnByRank[rank];
-                              const x = (col / (SPRITE_COLUMNS - 1)) * 100;
-                              const y = (row / (SPRITE_ROWS - 1)) * 100;
-                              // Etiquetas personalizadas para figuras
-                              let nombreFigura = '';
-                              if (rank === 10) nombreFigura = 'Sota';
-                              else if (rank === 11) nombreFigura = 'Caballo';
-                              else if (rank === 12) nombreFigura = 'Rey';
-                              const label = nombreFigura ? `${nombreFigura} de ${suit}` : `${rankLabel(rank)} de ${suit}`;
-                              return (
-                                <span
-                                  key={cardId}
-                                  className={`minicard ${isOut ? 'minicard-out' : 'minicard-dark'}`}
-                                  title={label}
-                                  aria-label={`${label}${isOut ? ' (descartada)' : ' (no vista)'}`}
-                                  style={{
-                                    backgroundImage: `url(${barajaSprite})`,
-                                    backgroundPosition: `${x}% ${y}%`,
-                                    backgroundSize: `${SPRITE_COLUMNS * 100}% ${SPRITE_ROWS * 100}%`,
-                                  }}
-                                />
-                              );
-                            })}
-                          </div>
-                        ))}
+          {showDiscardModal && (
+            <div className="discard-modal" onClick={() => setShowDiscardModal(false)}>
+              <div className="discard-modal-content" onClick={e => e.stopPropagation()}>
+                <button className="close-modal-btn" onClick={() => setShowDiscardModal(false)} aria-label="Cerrar">×</button>
+                <div className="minicards-grid-wrap">
+                  <div className="minicards-grid">
+                    {SUITS.map((suit) => (
+                      <div key={suit} className="minicards-row">
+                        {RANKS.map((rank) => {
+                          if (![1,2,3,4,5,6,7,10,11,12].includes(rank)) return null;
+                          const cardId = `${suit}-${rank}`;
+                          const isOut = game.discardPile.some(c => c.suit === suit && c.rank === rank);
+                          const row = spriteRowBySuit[suit];
+                          const col = spriteColumnByRank[rank as Rank];
+                          const x = (col / (SPRITE_COLUMNS - 1)) * 100;
+                          const y = (row / (SPRITE_ROWS - 1)) * 100;
+                          let nombreFigura = '';
+                          if (rank === 10) nombreFigura = 'Sota';
+                          else if (rank === 11) nombreFigura = 'Caballo';
+                          else if (rank === 12) nombreFigura = 'Rey';
+                          const label = nombreFigura ? `${nombreFigura} de ${suit}` : `${rankLabel(rank as Rank)} de ${suit}`;
+                          return (
+                            <span
+                              key={cardId}
+                              className={`minicard ${isOut ? 'minicard-out' : 'minicard-dark'}`}
+                              title={label}
+                              aria-label={`${label}${isOut ? ' (descartada)' : ' (no vista)'}`}
+                              style={{
+                                backgroundImage: `url(${barajaSprite})`,
+                                backgroundPosition: `${x}% ${y}%`,
+                                backgroundSize: `${SPRITE_COLUMNS * 100}% ${SPRITE_ROWS * 100}%`,
+                              }}
+                            />
+                          );
+                        })}
                       </div>
-                    </div>
-                    <p className="desc-modal-text">Cartas vistas en el descarte durante la partida.</p>
+                    ))}
                   </div>
                 </div>
-              )}
+                <p className="desc-modal-text">Cartas vistas en el descarte durante la partida.</p>
+              </div>
+            </div>
+          )}
         </section>
 
-        <section
-          className={`human-hand-panel ${isHumanTurn ? 'active' : ''} ${dragSource ? 'drop-target' : ''} ${isWinner(humanPlayer.id) ? 'winner-glow' : ''}`}
-          onDragOver={allowDropToHand}
-          onDrop={dropToHand}
-        >
-          <div className="human-hand-header">
-            <h2>{humanPlayer.name}</h2>
-            <span className="lives-hearts" aria-label={`Vidas: ${humanPlayer.lives}`}>
-              {[0,1,2].map(i => (
-                <svg
-                  key={i}
-                  width="18" height="18" viewBox="0 0 20 20"
-                  aria-hidden="true"
-                  style={{ marginRight: i < 2 ? 2 : 0, opacity: humanPlayer.lives > i ? 1 : 0.32, filter: humanPlayer.lives > i ? 'drop-shadow(0 0 2px #f6d77a)' : 'none' }}
-                  fill={humanPlayer.lives > i ? '#e94f4f' : 'none'}
-                  stroke="#e94f4f"
-                  strokeWidth="1.2"
-                >
-                  <path d="M10 17s-6.2-4.2-7.6-7.1C1.1 7.7 2.2 5 5 5c1.5 0 2.7 1 3.3 2.1C9 6 10.2 5 11.7 5c2.8 0 3.9 2.7 2.6 4.9C16.2 12.8 10 17 10 17z"/>
-                </svg>
-              ))}
-            </span>
-            <span>Puntos: {scoreHand(humanPlayer.hand)}</span>
-            <span>{isHumanTurn ? 'Tu turno' : `Juega ${currentPlayer.name}`}</span>
-          </div>
-
-          <div className="human-hand fan-layout">
-            {humanPlayer.hand.map((card, cardIndex) => (
-              <button
-                key={`${card.id}-${cardIndex}`}
-                className={`card human-card sprite-card aged-card ${draggedHandCardIndex === cardIndex ? 'dragging-card' : ''}`}
-                type="button"
-                style={{
-                  ...humanCardStyle(cardIndex, humanPlayer.hand.length),
-                  ...cardSpriteStyle(card),
-                }}
-                disabled={!(game.phase === 'discarding' && isHumanTurn)}
-                draggable={game.phase === 'discarding' && isHumanTurn}
-                onDragStart={(event) => startHandCardDrag(cardIndex, event)}
-                onDragEnd={endHandCardDrag}
-                onClick={() => discardForHuman(cardIndex)}
+      <section className={`human-hand-panel ${isHumanTurn ? 'active' : ''} ${dragSource ? 'drop-target' : ''} ${isWinner(humanPlayer.id) ? 'winner-glow' : ''}`} onDragOver={allowDropToHand} onDrop={dropToHand}>
+        <div className="human-hand-header">
+          <h2>{humanPlayer.name}</h2>
+          <span className="lives-hearts" aria-label={`Vidas: ${humanPlayer.lives}`}>
+            {[0,1,2].map(i => (
+              <svg
+                key={i}
+                width="18" height="18" viewBox="0 0 20 20"
+                aria-hidden="true"
+                style={{ marginRight: i < 2 ? 2 : 0, opacity: humanPlayer.lives > i ? 1 : 0.32, filter: humanPlayer.lives > i ? 'drop-shadow(0 0 2px #f6d77a)' : 'none' }}
+                fill={humanPlayer.lives > i ? '#e94f4f' : 'none'}
+                stroke="#e94f4f"
+                strokeWidth="1.2"
               >
-                <span className="sr-only">{rankLabel(card.rank)} de {card.suit}</span>
-              </button>
+                <path d="M10 17s-6.2-4.2-7.6-7.1C1.1 7.7 2.2 5 5 5c1.5 0 2.7 1 3.3 2.1C9 6 10.2 5 11.7 5c2.8 0 3.9 2.7 2.6 4.9C16.2 12.8 10 17 10 17z"/>
+              </svg>
             ))}
-            {showWinners && (
-              isWinner(humanPlayer.id)
-                ? <span className="player-result-label gana">GANA</span>
-                : losersThisRound.includes(humanPlayer.id)
-                  ? <span className="player-result-label pierde">PIERDE</span>
-                  : null
-            )}
-          </div>
-        </section>
+          </span>
+          <span>Puntos: {scoreHand(humanPlayer.hand)}</span>
+          <span>{isHumanTurn ? 'Tu turno' : `Juega ${currentPlayer.name}`}</span>
+        </div>
+        <div className="human-hand fan-layout">
+          {humanPlayer.hand.map((card, cardIndex) => (
+            <button
+              key={`${card.id}-${cardIndex}`}
+              className={`card human-card sprite-card aged-card ${draggedHandCardIndex === cardIndex ? 'dragging-card' : ''}`}
+              type="button"
+              style={{
+                ...humanCardStyle(cardIndex, humanPlayer.hand.length),
+                ...cardSpriteStyle(card),
+              }}
+              disabled={!(game.phase === 'discarding' && isHumanTurn)}
+              draggable={game.phase === 'discarding' && isHumanTurn}
+              onDragStart={(event) => startHandCardDrag(cardIndex, event)}
+              onDragEnd={endHandCardDrag}
+              onClick={() => discardForHuman(cardIndex)}
+            >
+              <span className="sr-only">{rankLabel(card.rank)} de {card.suit}</span>
+            </button>
+          ))}
+          {showWinners && (
+            isWinner(humanPlayer.id)
+              ? <span className="player-result-label gana">GANA</span>
+              : losersThisRound.includes(humanPlayer.id)
+                ? <span className="player-result-label pierde">PIERDE</span>
+                : null
+          )}
+        </div>
       </section>
 
+      </section>
       <section className="log-panel">
         <p className="turn-badge">
           Turno actual: {currentPlayer.name}
