@@ -98,8 +98,9 @@ const cardValue = (rank: Rank): number => {
 
 const rankLabel = (rank: Rank): string => {
   if (rank === 1) return 'As'
-  if (rank === 11) return 'J'
-  if (rank === 12) return 'Q'
+  if (rank === 10) return 'Sota'
+  if (rank === 11) return 'Caballo'
+  if (rank === 12) return 'Rey'
   return String(rank)
 }
 
