@@ -481,10 +481,15 @@ function App() {
 
   const discardForHuman = (cardIndex: number) => {
     setGame((prev) => {
+      // Protección extra: solo permitir descartar si es humano, fase correcta, turno correcto y mano válida
       const current = prev.players[prev.currentPlayerIndex]
-      if (!current.isHuman || prev.phase !== 'discarding') return prev
+      if (!current.isHuman) return prev
+      if (prev.phase !== 'discarding') return prev
+      if (!isAlive(current)) return prev
       if (cardIndex < 0 || cardIndex >= current.hand.length) return prev
+      if (current.hand.length !== 4) return prev // Solo se puede descartar cuando hay 4 cartas
 
+      // Evita clicks múltiples: si ya se ha descartado, la mano ya no tiene 4 cartas
       const nextHand = current.hand.filter((_, index) => index !== cardIndex)
       const card = current.hand[cardIndex]
       const players = [...prev.players]
