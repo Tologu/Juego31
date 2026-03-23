@@ -301,7 +301,9 @@ function App() {
   const [dragSource, setDragSource] = useState<DrawSource | null>(null)
   const [draggedHandCardIndex, setDraggedHandCardIndex] = useState<number | null>(null)
   const [showDiscardModal, setShowDiscardModal] = useState(false)
+  const [knockNotification, setKnockNotification] = useState<string | null>(null)
   const draggedHandCardElementRef = useRef<HTMLElement | null>(null)
+  const prevKnockerIdRef = useRef<number | null>(null)
 
   const currentPlayer = game.players[game.currentPlayerIndex]
   const topDiscard = game.discardPile[game.discardPile.length - 1]
@@ -534,6 +536,20 @@ function App() {
   const applySettings = () => {
     setGame(setupRound(buildPlayers(playerCount, humanName), 0, 1))
   }
+
+  useEffect(() => {
+    if (game.knockerId !== null && prevKnockerIdRef.current === null) {
+      const knocker = game.players.find((p) => p.id === game.knockerId)
+      if (knocker) setKnockNotification(`${knocker.name} se planta`)
+    }
+    prevKnockerIdRef.current = game.knockerId
+  }, [game.knockerId, game.players])
+
+  useEffect(() => {
+    if (!knockNotification) return
+    const timer = setTimeout(() => setKnockNotification(null), 3000)
+    return () => clearTimeout(timer)
+  }, [knockNotification])
 
   useEffect(() => {
     if (game.phase !== 'turn') return
@@ -808,29 +824,36 @@ function App() {
             </div>
           </div>
 
-          <div className="controls">
-            <button type="button" onClick={knockForHuman} disabled={!canHumanAct || game.knockerId !== null || game.phase !== 'turn'}>
-              Plantarse
-            </button>
-            <button
-              type="button"
-              onClick={startNextRound}
-              disabled={game.phase !== 'round-end'}
-              className={game.phase === 'round-end' ? 'next-round-btn highlight-green' : 'next-round-btn'}
-            >
-              Siguiente ronda
-            </button>
-            <button type="button" onClick={restartGame}>
-              Reiniciar partida
-            </button>
-            <button
-              type="button"
-              className="show-discard-btn"
-              style={{ marginLeft: 8 }}
-              onClick={() => setShowDiscardModal(true)}
-            >
-              Cartas que han salido
-            </button>
+          <div className="controls-row">
+            <div className="controls">
+              <button type="button" onClick={knockForHuman} disabled={!canHumanAct || game.knockerId !== null || game.phase !== 'turn'}>
+                Plantarse
+              </button>
+              <button
+                type="button"
+                onClick={startNextRound}
+                disabled={game.phase !== 'round-end'}
+                className={game.phase === 'round-end' ? 'next-round-btn highlight-green' : 'next-round-btn'}
+              >
+                Siguiente ronda
+              </button>
+              <button type="button" onClick={restartGame}>
+                Reiniciar partida
+              </button>
+              <button
+                type="button"
+                className="show-discard-btn"
+                onClick={() => setShowDiscardModal(true)}
+              >
+                Cartas que han salido
+              </button>
+            </div>
+            {knockNotification && (
+              <div className="knock-notification" role="status" aria-live="polite">
+                <span className="knock-icon">✋</span>
+                {knockNotification}
+              </div>
+            )}
           </div>
           {showDiscardModal && (
             <div className="discard-modal" onClick={() => setShowDiscardModal(false)}>
