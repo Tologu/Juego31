@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type CSSProperties, type DragEvent } from 'react'
+import { useEffect, useMemo, useRef, useState, type CSSProperties, type DragEvent } from 'react'
 import barajaSprite from './assets/baraja_espanola_completa.png'
 import './App.css'
 
@@ -652,9 +652,38 @@ function App() {
     return () => clearTimeout(timer)
   }, [game, difficulty])
 
+  const lobbyColumns = useMemo(() =>
+    [0, 1, 2, 3].map(() => {
+      const deck = createDeck()
+      return shuffle(deck)
+    })
+  , [])
+
   if (!gameStarted) {
     return (
       <main className="table-wrap lobby-wrap">
+        <div className="lobby-bg-columns" aria-hidden="true">
+          {lobbyColumns.map((cards, colIndex) => (
+            <div key={colIndex} className="lobby-col">
+              <div
+                className="lobby-col-inner"
+                style={{
+                  animationName: colIndex % 2 === 0 ? 'lobby-scroll-down' : 'lobby-scroll-up',
+                  animationDuration: `${70 + colIndex * 19}s`,
+                }}
+              >
+                {[...cards, ...cards].map((card, i) => (
+                  <div
+                    key={i}
+                    className="lobby-bg-card sprite-card"
+                    style={cardSpriteStyle(card)}
+                  />
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="lobby-bg-fade" aria-hidden="true" />
         <div className="lobby">
           <h1 className="lobby-title">Mesa del 31</h1>
           <p className="lobby-subtitle">Baraja española · De 2 a 6 jugadores</p>
@@ -726,7 +755,7 @@ function App() {
   return (
     <main className="table-wrap">
       <header className="table-header">
-        <h1>Juego del 31</h1>
+        <h1><button type="button" className="title-home-btn" onClick={restartGame}>Mesa del 31</button></h1>
         <button
           className="rules-btn"
           style={{ position: 'absolute', top: 18, right: 18, zIndex: 10 }}
