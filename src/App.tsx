@@ -293,6 +293,7 @@ const finishTurn = (state: GameState, actorIndex: number): GameState => {
 }
 
 function App() {
+  const [gameStarted, setGameStarted] = useState(false)
   const [playerCount, setPlayerCount] = useState(4)
   const [humanName, setHumanName] = useState('')
   const [showRules, setShowRules] = useState(false)
@@ -529,12 +530,14 @@ function App() {
     })
   }
 
-  const restartGame = () => {
+  const startGame = () => {
     setGame(setupRound(buildPlayers(playerCount, humanName), 0, 1))
+    setGameStarted(true)
   }
 
-  const applySettings = () => {
-    setGame(setupRound(buildPlayers(playerCount, humanName), 0, 1))
+  const restartGame = () => {
+    setKnockNotification(null)
+    setGameStarted(false)
   }
 
   useEffect(() => {
@@ -643,6 +646,77 @@ function App() {
     return () => clearTimeout(timer)
   }, [game, difficulty])
 
+  if (!gameStarted) {
+    return (
+      <main className="table-wrap lobby-wrap">
+        <div className="lobby">
+          <h1 className="lobby-title">Mesa del 31</h1>
+          <p className="lobby-subtitle">Baraja española · De 2 a 6 jugadores</p>
+          <div className="lobby-settings">
+            <label>
+              Tu nombre
+              <input
+                type="text"
+                value={humanName}
+                onChange={e => setHumanName(e.target.value)}
+                maxLength={16}
+                placeholder="Tu nombre"
+                autoFocus
+              />
+            </label>
+            <label>
+              Jugadores
+              <select
+                value={playerCount}
+                onChange={(event) => setPlayerCount(Number(event.target.value))}
+              >
+                <option value={2}>2</option>
+                <option value={3}>3</option>
+                <option value={4}>4</option>
+                <option value={5}>5</option>
+                <option value={6}>6</option>
+              </select>
+            </label>
+            <label>
+              Dificultad
+              <select
+                value={difficulty}
+                onChange={(event) => setDifficulty(event.target.value as Difficulty)}
+              >
+                <option value="facil">Facil</option>
+                <option value="media">Media</option>
+                <option value="dificil">Dificil</option>
+              </select>
+            </label>
+          </div>
+          <button className="lobby-start-btn" type="button" onClick={startGame}>
+            Comenzar partida
+          </button>
+          <button className="rules-btn lobby-rules-btn" type="button" onClick={() => setShowRules(true)}>
+            Ver reglas
+          </button>
+        </div>
+        {showRules && (
+          <div className="discard-modal" onClick={() => setShowRules(false)}>
+            <div className="discard-modal-content" onClick={e => e.stopPropagation()}>
+              <button className="close-modal-btn" onClick={() => setShowRules(false)} aria-label="Cerrar">×</button>
+              <h2 style={{marginBottom: 18}}>Reglas del Juego del 31</h2>
+              <ul style={{ textAlign: 'left', maxWidth: 420, margin: '0 auto', fontSize: '1.08em', marginBottom: 0 }}>
+                <li>Se juega con la baraja española (sin 8, 9 ni comodines).</li>
+                <li>Cada jugador recibe 3 cartas.</li>
+                <li>El objetivo es sumar 31 puntos o acercarse lo máximo posible en un mismo palo.</li>
+                <li>El As vale 11 puntos, figuras 10, el resto su valor.</li>
+                <li>En tu turno puedes robar del mazo o del descarte y luego descartar una carta.</li>
+                <li>Cuando un jugador se planta, los demás tienen una última oportunidad.</li>
+                <li>El que más puntos tenga en un palo gana la ronda.</li>
+              </ul>
+            </div>
+          </div>
+        )}
+      </main>
+    )
+  }
+
   return (
     <main className="table-wrap">
       <header className="table-header">
@@ -660,46 +734,6 @@ function App() {
           <span>Turno: {game.players[game.currentPlayerIndex].name}</span>
           <span>Jugadores: {game.players.length}</span>
           <span>Dificultad: {difficulty}</span>
-        </div>
-        <div className="settings-row">
-          <label>
-            Tu nombre
-            <input
-              type="text"
-              value={humanName}
-              onChange={e => setHumanName(e.target.value)}
-              maxLength={16}
-              style={{ marginLeft: 8, width: 120 }}
-              placeholder="Tu nombre"
-            />
-          </label>
-          <label>
-            Jugadores
-            <select
-              value={playerCount}
-              onChange={(event) => setPlayerCount(Number(event.target.value))}
-            >
-              <option value={2}>2</option>
-              <option value={3}>3</option>
-              <option value={4}>4</option>
-              <option value={5}>5</option>
-              <option value={6}>6</option>
-            </select>
-          </label>
-          <label>
-            Dificultad
-            <select
-              value={difficulty}
-              onChange={(event) => setDifficulty(event.target.value as Difficulty)}
-            >
-              <option value="facil">Facil</option>
-              <option value="media">Media</option>
-              <option value="dificil">Dificil</option>
-            </select>
-          </label>
-          <button type="button" onClick={applySettings}>
-            Aplicar ajustes
-          </button>
         </div>
         {showRules && (
           <div className="discard-modal" onClick={() => setShowRules(false)}>
