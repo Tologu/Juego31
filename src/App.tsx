@@ -875,21 +875,30 @@ function App() {
             </div>
             <div className="pile-box discard-focus">
               <h3>Descarte</h3>
-              <button
-                type="button"
-                className={`top-card sprite-card aged-card action-pile ${canHumanAct && game.phase === 'turn' ? 'drag-enabled' : ''} ${dragSource === 'discard' ? 'dragging' : ''} ${canHumanDiscard ? 'discard-drop-ready' : ''}`}
-                style={cardSpriteStyle(topDiscard)}
-                onClick={() => drawForHuman('discard')}
-                onDragStart={(event) => startDrawDrag('discard', event)}
-                onDragEnd={endDrawDrag}
-                onDragOver={allowDropToDiscard}
-                onDrop={dropToDiscard}
-                draggable={canHumanAct && game.phase === 'turn'}
-                disabled={!canHumanAct || game.phase !== 'turn'}
-                aria-label="Robar del descarte arrastrando a tu mano"
-              >
-                <span className="sr-only">{rankLabel(topDiscard.rank)} de {topDiscard.suit}</span>
-              </button>
+              {topDiscard ? (
+                <button
+                  type="button"
+                  className={`top-card sprite-card aged-card action-pile ${canHumanAct && game.phase === 'turn' ? 'drag-enabled' : ''} ${dragSource === 'discard' ? 'dragging' : ''} ${canHumanDiscard ? 'discard-drop-ready' : ''}`}
+                  style={cardSpriteStyle(topDiscard)}
+                  onClick={() => drawForHuman('discard')}
+                  onDragStart={(event) => startDrawDrag('discard', event)}
+                  onDragEnd={endDrawDrag}
+                  onDragOver={allowDropToDiscard}
+                  onDrop={dropToDiscard}
+                  draggable={canHumanAct && game.phase === 'turn'}
+                  disabled={!canHumanAct || game.phase !== 'turn'}
+                  aria-label="Robar del descarte arrastrando a tu mano"
+                >
+                  <span className="sr-only">{rankLabel(topDiscard.rank)} de {topDiscard.suit}</span>
+                </button>
+              ) : (
+                <div
+                  className={`top-card sprite-card aged-card action-pile ${canHumanDiscard ? 'discard-drop-ready' : ''}`}
+                  onDragOver={allowDropToDiscard}
+                  onDrop={dropToDiscard}
+                  aria-label="Pila de descarte vacía"
+                />
+              )}
             </div>
           </div>
 
