@@ -23,6 +23,7 @@ interface GameState {
   players: Player[]
   deck: Card[]
   discardPile: Card[]
+  seenCardIds: string[]
   dealerIndex: number
   currentPlayerIndex: number
   knockerId: number | null
@@ -199,6 +200,7 @@ const setupRound = (players: Player[], dealerIndex: number, round: number): Game
     players: roundPlayers,
     deck,
     discardPile: [firstDiscard],
+    seenCardIds: [firstDiscard.id],
     dealerIndex,
     currentPlayerIndex: starter,
     knockerId: null,
@@ -394,6 +396,8 @@ function App() {
         deck = refill.deck
         discardPile = refill.discardPile
         if (deck.length === 0) return prev
+      } else {
+        if (discardPile.length === 0) return prev
       }
 
       const drawn = source === 'deck' ? deck.pop()! : discardPile.pop()!
@@ -503,6 +507,7 @@ function App() {
         ...prev,
         players,
         discardPile: [...prev.discardPile, card],
+        seenCardIds: prev.seenCardIds.includes(card.id) ? prev.seenCardIds : [...prev.seenCardIds, card.id],
         logs: [...prev.logs, `${current.name} descartó ${rankLabel(card.rank)} de ${card.suit}.`],
       }
 
@@ -588,12 +593,12 @@ function App() {
         let discardPile = [...prev.discardPile]
         const top = discardPile[discardPile.length - 1]
 
-        const scoreIfTakeDiscard = scoreHand([...bot.hand, top])
-        let shouldTakeDiscard = scoreIfTakeDiscard > botScore
-        if (Math.random() < config.mistakeChance) {
+        const scoreIfTakeDiscard = top ? scoreHand([...bot.hand, top]) : -1
+        let shouldTakeDiscard = top !== undefined && scoreIfTakeDiscard > botScore
+        if (top !== undefined && Math.random() < config.mistakeChance) {
           shouldTakeDiscard = !shouldTakeDiscard
         }
-        const source: 'deck' | 'discard' = shouldTakeDiscard ? 'discard' : 'deck'
+        const source: 'deck' | 'discard' = (shouldTakeDiscard && top !== undefined) ? 'discard' : 'deck'
 
         if (source === 'deck') {
           const refill = refillDeckIfNeeded(deck, discardPile)
@@ -640,6 +645,7 @@ function App() {
           players,
           deck,
           discardPile: [...discardPile, discarded],
+          seenCardIds: prev.seenCardIds.includes(discarded.id) ? prev.seenCardIds : [...prev.seenCardIds, discarded.id],
           logs: [
             ...prev.logs,
             logMsg,
@@ -944,7 +950,7 @@ function App() {
                         {RANKS.map((rank) => {
                           if (![1,2,3,4,5,6,7,10,11,12].includes(rank)) return null;
                           const cardId = `${suit}-${rank}`;
-                          const isOut = game.discardPile.some(c => c.suit === suit && c.rank === rank);
+                          const isOut = game.seenCardIds.includes(`${suit}-${rank}`)
                           const row = spriteRowBySuit[suit];
                           const col = spriteColumnByRank[rank as Rank];
                           const x = (col / (SPRITE_COLUMNS - 1)) * 100;
