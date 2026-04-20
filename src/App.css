@@ -944,7 +944,7 @@
 
 .human-score-badge {
   position: absolute;
-  right: 300px;
+  right: 6px;
   top: 50%;
   transform: translateY(-50%);
   display: flex;
@@ -1164,6 +1164,14 @@
     aspect-ratio: 192 / 319;
     margin-left: -12px;
   }
+
+  .human-score-number {
+    font-size: clamp(1.8rem, 4vw, 2.6rem);
+  }
+
+  .human-score-label {
+    font-size: clamp(0.45rem, 0.9vw, 0.6rem);
+  }
 }
 
 @media (max-width: 640px) {
@@ -1199,5 +1207,14 @@
       translateX(calc(var(--fan-offset) * 15px))
       translateY(calc(-3px + (var(--fan-depth) * 6px)))
       rotate(calc(var(--fan-rotate) * 0.72));
+  }
+
+  .human-score-number {
+    font-size: clamp(1.4rem, 8vw, 2rem);
+  }
+
+  .human-score-label {
+    font-size: 0.5rem;
+    letter-spacing: 0.12em;
   }
 }
