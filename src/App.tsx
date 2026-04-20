@@ -1002,10 +1002,31 @@ function App() {
               </svg>
             ))}
           </span>
-          <span>Puntos: {scoreHand(humanPlayer.hand)}</span>
           <span>{isHumanTurn ? 'Tu turno' : `Juega ${currentPlayer.name}`}</span>
         </div>
-        <div className="human-hand fan-layout">
+        <div className="human-hand fan-layout" style={{ position: 'relative' }}>
+          <div
+            className={`human-score-badge ${
+              scoreHand(humanPlayer.hand) < 10
+                ? 'score-low'
+                : scoreHand(humanPlayer.hand) < 21
+                  ? 'score-mid'
+                  : scoreHand(humanPlayer.hand) <= 26
+                    ? 'score-good'
+                    : 'score-high'
+            }`}
+            aria-label={`${scoreHand(humanPlayer.hand)} puntos`}
+          >
+            <span className="human-score-number">
+              {scoreHand(humanPlayer.hand) > 26
+                ? String(scoreHand(humanPlayer.hand)).split('').map((digit, i) => (
+                    <span key={i} className="score-digit" style={{ animationDelay: `${i * 0.18}s` }}>{digit}</span>
+                  ))
+                : scoreHand(humanPlayer.hand)
+              }
+            </span>
+            <span className="human-score-label">PUNTOS</span>
+          </div>
           {humanPlayer.hand.map((card, cardIndex) => (
             <button
               key={`${card.id}-${cardIndex}`}
